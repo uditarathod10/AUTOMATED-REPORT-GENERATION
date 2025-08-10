@@ -1,0 +1,73 @@
+import pandas as pd  # pandas is used for reading and analyzing data from a CSV fil
+from fpdf import FPDF  # fpdf is used to create a PDF file from Python.
+
+
+def analyze_data(file_path):  #This function takes a file path to a CSV file and returns a dictionary 
+    # Load CSV file
+    df = pd.read_csv("record1.csv")  #Reads the file and loads it into a DataFrame (df).
+
+    # Clean and convert Salary column
+    df["Salary"] = (
+        df["Salary"]
+        .astype(str)  #.astype(str) ensures every salary value is treated as a string, even if it's a number.
+        .str.replace(r'[^0-9.]', '', regex=True)  # Remove $ , or other non-numeric characters
+    )
+    df["Salary"] = pd.to_numeric(df["Salary"], errors='coerce')  # Convert to numbers
+
+    # Build summary statistics
+    summary_data = {
+        "Total Employees": len(df),
+        "Average Salary": round(df["Salary"].mean(), 2),
+        "Max Salary": df["Salary"].max(),
+        "Min Salary": df["Salary"].min(),
+        "Department Counts": df["Department"].value_counts().to_dict(),
+        "Average Salary by Department": df.groupby("Department")["Salary"].mean().round(2).to_dict()
+    }
+
+    return summary_data
+
+
+def generate_pdf(summary, output_path):  #Takes the summary dictionary and creates a formatted PDF report.
+    pdf = FPDF()  #creates a new PDF object
+    pdf.add_page() #adds a blank page to write on.
+    
+
+    pdf.set_font("Arial", size=12) #Sets the font and size.
+
+    pdf.cell(200, 10, txt="Employee Data Analysis Report", ln=True, align="C")
+    pdf.ln(10)
+
+    pdf.set_font("Arial", size=11)
+    pdf.cell(0, 10, f"Total Employees: {summary['Total Employees']}", ln=True)
+    pdf.cell(0, 10, f"Average Salary: {summary['Average Salary']}", ln=True)
+    pdf.cell(0, 10, f"Maximum Salary: {summary['Max Salary']}", ln=True)
+    pdf.cell(0, 10, f"Minimum Salary: {summary['Min Salary']}", ln=True)
+
+    pdf.ln(10)
+    pdf.set_font("Arial", 'B', 11)
+    pdf.cell(0, 10, "Employees per Department:", ln=True)
+    pdf.set_font("Arial", size=11)
+    for dept, count in summary['Department Counts'].items():
+        pdf.cell(0, 10, f" - {dept}: {count}", ln=True)
+
+    pdf.ln(5)
+    pdf.set_font("Arial", 'B', 11)
+    pdf.cell(0, 10, "Average Salary by Department:", ln=True)
+    pdf.set_font("Arial", size=11)
+    for dept, avg_salary in summary['Average Salary by Department'].items():
+        pdf.cell(0, 10, f" - {dept}: {avg_salary}", ln=True)
+
+    pdf.output(output_path)
+    print(f" Report saved to: {output_path}")
+
+
+if __name__ == "__main__":
+    input_file = "sample_data.csv"        
+    output_pdf = "employee_report.pdf"    
+
+    summary_data = analyze_data(input_file)
+    print("Summary data:\n", summary_data)  
+    generate_pdf(summary_data, output_pdf)
+
+   
+    
