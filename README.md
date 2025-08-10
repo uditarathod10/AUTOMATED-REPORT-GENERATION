@@ -35,3 +35,6 @@ Technical Requirements:
 - Python 3.x
 - Data source integration (e.g., pandas for CSV, sqlite3 for databases)
 - Report generation library (e.g., ReportLab for PDF)
+
+  OUTPUT
+  ![Image](https://github.com/user-attachments/assets/9bf55341-7082-4281-bfe2-0379435528e8)
